@@ -33,8 +33,8 @@ import {
   influencerSchema,
   type InfluencerInput,
   defaultInfluencerValues,
-} from "@modules/influencers/schemas/influencer.schema"
-import { createInfluencerAction } from "@modules/influencers/actions/influencer.actions"
+} from "../schemas/influencer.schema"
+import { createInfluencerAction } from "../actions/influencer.actions"
 
 export function InfluencerRegisterForm() {
   const [isSubmitting, setIsSubmitting] = React.useState(false)

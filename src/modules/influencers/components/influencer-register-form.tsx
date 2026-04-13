@@ -36,7 +36,15 @@ import {
 } from "../schemas/influencer.schema"
 import { createInfluencerAction } from "../actions/influencer.actions"
 
-export function InfluencerRegisterForm() {
+interface InfluencerRegisterFormProps {
+  onSuccess?: () => void
+  onCancel?: () => void
+}
+
+export function InfluencerRegisterForm({
+  onSuccess,
+  onCancel,
+}: InfluencerRegisterFormProps) {
   const [isSubmitting, setIsSubmitting] = React.useState(false)
 
   const form = useForm<InfluencerInput>({
@@ -64,6 +72,11 @@ export function InfluencerRegisterForm() {
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  function handleCancel() {
+    form.reset(defaultInfluencerValues)
+    onCancel?.()
   }
 
   return (

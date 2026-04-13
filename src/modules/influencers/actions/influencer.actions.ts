@@ -1,10 +1,8 @@
-"use server"
-
-import { revalidateTag } from "next/cache"
-import { supabase } from "@/lib/supabase/client"
-import { influencerSchema } from "@modules/influencers/schemas/influencer.schema"
+import { createClient } from "@/lib/supabase/client"
+import { influencerSchema } from "./schemas/influencer.schema"
 
 export async function createInfluencerAction(formData: FormData) {
+  const supabase = createClient()
   // Convert FormData to object
   const rawData = Object.fromEntries(formData)
 
@@ -50,9 +48,6 @@ export async function createInfluencerAction(formData: FormData) {
   if (error) {
     throw new Error(error.message)
   }
-
-  // Revalidate (in Next.js this would revalidate cache)
-  revalidateTag("influencers")
 
   return data
 }

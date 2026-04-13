@@ -1,8 +1,7 @@
-import { createClient } from "@/lib/supabase/client"
-import { influencerSchema } from "./schemas/influencer.schema"
+import { supabase } from "@/lib/supabase/client"
+import { influencerSchema } from "../schemas/influencer.schema"
 
 export async function createInfluencerAction(formData: FormData) {
-  const supabase = createClient()
   // Convert FormData to object
   const rawData = Object.fromEntries(formData)
 

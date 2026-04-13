@@ -38,12 +38,10 @@ import { createInfluencerAction } from "../actions/influencer.actions"
 
 interface InfluencerRegisterFormProps {
   onSuccess?: () => void
-  onCancel?: () => void
 }
 
 export function InfluencerRegisterForm({
   onSuccess,
-  onCancel,
 }: InfluencerRegisterFormProps) {
   const [isSubmitting, setIsSubmitting] = React.useState(false)
 
@@ -69,16 +67,12 @@ export function InfluencerRegisterForm({
       const message =
         error instanceof Error ? error.message : "Error inesperado"
       toast.error(message)
+
     } finally {
       setIsSubmitting(false)
+      onSuccess?.()
     }
   }
-
-  function handleCancel() {
-    form.reset(defaultInfluencerValues)
-    onCancel?.()
-  }
-
   return (
     <Card className="mx-auto w-full max-w-2xl">
       <CardHeader>

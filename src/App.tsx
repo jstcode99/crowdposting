@@ -1,18 +1,18 @@
-import { Button } from "@/components/ui/button"
+import { Toaster } from "sonner"
+import { InfluencerRegisterForm } from "@/modules/influencers/components/influencer-register-form"
 
 export function App() {
   return (
     <div className="flex min-h-svh p-6">
-      <div className="flex max-w-md min-w-0 flex-col gap-4 text-sm leading-loose">
-        <div>
-          <h1 className="font-medium">Project ready!</h1>
-          <p>You may now add components and start building.</p>
-          <p>We&apos;ve already added the button component for you.</p>
-          <Button className="mt-2">Button</Button>
+      <div className="flex w-full flex-col gap-4">
+        <div className="mb-6">
+          <h1 className="text-2xl font-medium">Registro de Influencers</h1>
+          <p className="text-muted-foreground">
+            Crowdposting - Gestión de influencers
+          </p>
         </div>
-        <div className="font-mono text-xs text-muted-foreground">
-          (Press <kbd>d</kbd> to toggle dark mode)
-        </div>
+        <InfluencerRegisterForm />
+        <Toaster position="top-right" />
       </div>
     </div>
   )

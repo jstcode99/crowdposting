@@ -47,8 +47,8 @@ export function useInfluencers() {
   const [isLoading, setIsLoading] = React.useState(true)
   const [error, setError] = React.useState<string | null>(null)
 
-  // Subscribe to realtime changes
-  const fetchRef = React.useRef(fetchInfluencers)
+  // Subscribe to realtime changes - declare ref after fetchInfluencers
+  const fetchRef = React.useRef<() => Promise<void>>(() => {})
   fetchRef.current = fetchInfluencers
 
   React.useEffect(() => {
@@ -61,12 +61,15 @@ export function useInfluencers() {
           schema: "public",
           table: "influencers",
         },
-        () => {
+        (payload) => {
+          console.log("📡 Realtime event received:", payload.eventType, payload)
           // Refresh data on any change - use ref to get latest function
           fetchRef.current()
         }
       )
-      .subscribe()
+      .subscribe((status) => {
+        console.log("📡 Realtime subscription status:", status)
+      })
 
     return () => {
       supabase.removeChannel(channel)

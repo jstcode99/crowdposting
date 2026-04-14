@@ -119,7 +119,7 @@ function StatusSelect({
 
 // Sort icon component
 function SortIcon({ field }: { field: keyof Influencer }) {
-  const { sort, updateSort } = React.useContext(TableContext)
+  const { sort } = React.useContext(TableContext)
 
   const isActive = sort.field === field
   const direction = isActive ? sort.direction : null
@@ -325,14 +325,6 @@ export function InfluencersTable() {
     setIsDialogOpen(false)
     toast.success("Influencer registrado exitosamente")
     refresh()
-  }
-
-  const pagination = {
-    ...paginationState,
-    updateFilter,
-    updateSort,
-    setPage,
-    isLoading,
   }
 
   const tableContextValue = React.useMemo(

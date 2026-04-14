@@ -49,33 +49,6 @@ export function useInfluencers() {
 
   // Subscribe to realtime changes - declare ref after fetchInfluencers
   const fetchRef = React.useRef<() => Promise<void>>(() => {})
-  fetchRef.current = fetchInfluencers
-
-  React.useEffect(() => {
-    // First, check if realtime is enabled for this table
-    const channel = supabase
-      .channel("influencers-realtime")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "influencers",
-        },
-        (payload) => {
-          console.log("📡 Realtime event received:", payload.eventType, payload)
-          // Refresh data on any change - use ref to get latest function
-          fetchRef.current()
-        }
-      )
-      .subscribe((status, err) => {
-        console.log("📡 Realtime subscription status:", status, err)
-      })
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [])
 
   // Fetch influencers based on filters and pagination
   async function fetchInfluencers() {
@@ -127,6 +100,32 @@ export function useInfluencers() {
       setIsLoading(false)
     }
   }
+
+  // Store latest fetchInfluencers for realtime callback
+  fetchRef.current = fetchInfluencers
+
+  // Subscribe to realtime changes
+  React.useEffect(() => {
+    const channel = supabase
+      .channel("influencers-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "influencers",
+        },
+        () => {
+          // Refresh data on any change
+          fetchRef.current()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [])
 
   // Fetch on filters, sort, or pagination change
   React.useEffect(() => {

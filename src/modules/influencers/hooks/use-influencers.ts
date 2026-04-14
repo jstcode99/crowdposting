@@ -47,9 +47,6 @@ export function useInfluencers() {
   const [isLoading, setIsLoading] = React.useState(true)
   const [error, setError] = React.useState<string | null>(null)
 
-  // Subscribe to realtime changes - declare ref after fetchInfluencers
-  const fetchRef = React.useRef(fetchInfluencers)
-
   // Fetch influencers based on filters and pagination
   const fetchInfluencers = React.useCallback(async () => {
     setIsLoading(true)
@@ -101,10 +98,6 @@ export function useInfluencers() {
     }
   }, [filters, sort, pagination.page, pagination.perPage])
 
-  // Store latest fetchInfluencers for realtime callback
-  // eslint-disable-next-line react-compiler/react-reference
-  fetchRef.current = fetchInfluencers
-
   // Subscribe to realtime changes
   React.useEffect(() => {
     const channel = supabase
@@ -118,7 +111,7 @@ export function useInfluencers() {
         },
         () => {
           // Refresh data on any change
-          fetchRef.current()
+          fetchInfluencers()
         }
       )
       .subscribe()
@@ -126,7 +119,7 @@ export function useInfluencers() {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [])
+  }, [fetchInfluencers])
 
   // Fetch on filters, sort, or pagination change
   React.useEffect(() => {

@@ -48,10 +48,10 @@ export function useInfluencers() {
   const [error, setError] = React.useState<string | null>(null)
 
   // Subscribe to realtime changes - declare ref after fetchInfluencers
-  const fetchRef = React.useRef<() => Promise<void>>(() => {})
+  const fetchRef = React.useRef(fetchInfluencers)
 
   // Fetch influencers based on filters and pagination
-  async function fetchInfluencers() {
+  const fetchInfluencers = React.useCallback(async () => {
     setIsLoading(true)
     setError(null)
 
@@ -99,9 +99,10 @@ export function useInfluencers() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [filters, sort, pagination.page, pagination.perPage])
 
   // Store latest fetchInfluencers for realtime callback
+  // eslint-disable-next-line react-compiler/react-reference
   fetchRef.current = fetchInfluencers
 
   // Subscribe to realtime changes

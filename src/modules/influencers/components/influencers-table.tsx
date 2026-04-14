@@ -19,7 +19,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { INFLUENCER_CATEGORIES, INFLUENCER_STATUSES, type InfluencerStatus, type Influencer } from "@/types/influencer"
+import {
+  INFLUENCER_CATEGORIES,
+  INFLUENCER_STATUSES,
+  type InfluencerStatus,
+  type Influencer,
+} from "@/types/influencer"
 import {
   useInfluencers,
   type InfluencerFilters,
@@ -74,6 +79,7 @@ function StatusSelect({
   influencerId: string
   currentStatus: InfluencerStatus
 }) {
+  const { refresh } = React.useContext(TableContext)
   const [isUpdating, setIsUpdating] = React.useState(false)
 
   async function handleStatusChange(newStatus: string) {
@@ -81,6 +87,7 @@ function StatusSelect({
     try {
       await updateInfluencerStatus(influencerId, newStatus as InfluencerStatus)
       toast.success("Estado actualizado correctamente")
+      refresh()
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Error al actualizar estado"
@@ -140,6 +147,7 @@ const TableContext = React.createContext<{
   }
   setPage: ReturnType<typeof useInfluencers>["setPage"]
   isLoading: boolean
+  refresh: ReturnType<typeof useInfluencers>["refresh"]
   updateFilter: ReturnType<typeof useInfluencers>["updateFilter"]
   updateSort: ReturnType<typeof useInfluencers>["updateSort"]
 }>({
@@ -148,6 +156,7 @@ const TableContext = React.createContext<{
   pagination: { page: 1, perPage: 10, totalCount: 0, totalPages: 0 },
   setPage: () => {},
   isLoading: false,
+  refresh: () => Promise.resolve(),
   updateFilter: () => {},
   updateSort: () => {},
 })
@@ -306,6 +315,7 @@ export function InfluencersTable() {
     updateFilter,
     updateSort,
     setPage,
+    refresh,
   } = useInfluencers()
 
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
@@ -314,6 +324,7 @@ export function InfluencersTable() {
   function handleSuccess() {
     setIsDialogOpen(false)
     toast.success("Influencer registrado exitosamente")
+    refresh()
   }
 
   const pagination = {
@@ -333,6 +344,7 @@ export function InfluencersTable() {
       pagination: paginationState,
       setPage,
       isLoading,
+      refresh,
     }),
     [
       filters,
@@ -342,6 +354,7 @@ export function InfluencersTable() {
       paginationState,
       setPage,
       isLoading,
+      refresh,
     ]
   )
 

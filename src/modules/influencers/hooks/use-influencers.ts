@@ -52,6 +52,7 @@ export function useInfluencers() {
   fetchRef.current = fetchInfluencers
 
   React.useEffect(() => {
+    // First, check if realtime is enabled for this table
     const channel = supabase
       .channel("influencers-realtime")
       .on(
@@ -67,8 +68,8 @@ export function useInfluencers() {
           fetchRef.current()
         }
       )
-      .subscribe((status) => {
-        console.log("📡 Realtime subscription status:", status)
+      .subscribe((status, err) => {
+        console.log("📡 Realtime subscription status:", status, err)
       })
 
     return () => {

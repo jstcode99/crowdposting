@@ -1,6 +1,10 @@
 import * as React from "react"
 import { supabase } from "@/lib/supabase/client"
-import type { Influencer, InfluencerCategory, InfluencerStatus } from "@/types/influencer"
+import type {
+  Influencer,
+  InfluencerCategory,
+  InfluencerStatus,
+} from "@/types/influencer"
 
 export interface InfluencerFilters {
   category?: InfluencerCategory | ""
@@ -44,6 +48,9 @@ export function useInfluencers() {
   const [error, setError] = React.useState<string | null>(null)
 
   // Subscribe to realtime changes
+  const fetchRef = React.useRef(fetchInfluencers)
+  fetchRef.current = fetchInfluencers
+
   React.useEffect(() => {
     const channel = supabase
       .channel("influencers-realtime")
@@ -54,9 +61,9 @@ export function useInfluencers() {
           schema: "public",
           table: "influencers",
         },
-        (payload) => {
-          // Refresh data on any change
-          fetchInfluencers()
+        () => {
+          // Refresh data on any change - use ref to get latest function
+          fetchRef.current()
         }
       )
       .subscribe()
@@ -74,9 +81,7 @@ export function useInfluencers() {
     try {
       const offset = (pagination.page - 1) * pagination.perPage
 
-      let query = supabase
-        .from("influencers")
-        .select("*", { count: "exact" })
+      let query = supabase.from("influencers").select("*", { count: "exact" })
 
       // Apply filters
       if (filters.category) {
@@ -136,7 +141,8 @@ export function useInfluencers() {
   function updateSort(field: keyof Influencer) {
     setSort((prev) => ({
       field,
-      direction: prev.field === field && prev.direction === "asc" ? "desc" : "asc",
+      direction:
+        prev.field === field && prev.direction === "asc" ? "desc" : "asc",
     }))
   }
 

@@ -185,7 +185,6 @@ function FiltersBar() {
             <SelectValue placeholder="Categoría" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Todas las categorías</SelectItem>
             {INFLUENCER_CATEGORIES.map((cat) => (
               <SelectItem key={cat.value} value={cat.value}>
                 {cat.label}
@@ -205,7 +204,6 @@ function FiltersBar() {
             <SelectValue placeholder="Estado" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Todos los estados</SelectItem>
             {INFLUENCER_STATUSES.map((status) => (
               <SelectItem key={status.value} value={status.value}>
                 {status.label}

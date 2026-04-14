@@ -1,5 +1,20 @@
 import { supabase } from "@/lib/supabase/client"
 import { influencerSchema } from "../schemas/influencer.schema"
+import type { InfluencerStatus } from "@/types/influencer"
+
+export async function updateInfluencerStatus(
+  influencerId: string,
+  newStatus: InfluencerStatus
+): Promise<void> {
+  const { error } = await supabase
+    .from("influencers")
+    .update({ status: newStatus })
+    .eq("id", influencerId)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+}
 
 export async function createInfluencerAction(formData: FormData) {
   // Convert FormData to object

@@ -19,11 +19,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { INFLUENCER_CATEGORIES, INFLUENCER_STATUSES } from "@/types/influencer"
+import { INFLUENCER_CATEGORIES, INFLUENCER_STATUSES, type InfluencerStatus, type Influencer } from "@/types/influencer"
 import {
   useInfluencers,
   type InfluencerFilters,
 } from "../hooks/use-influencers"
+import { updateInfluencerStatus } from "../actions/influencer.actions"
 import { InfluencerRegisterForm } from "./influencer-register-form"
 import {
   ArrowDownIcon,
@@ -31,7 +32,6 @@ import {
   ChevronsUpDownIcon,
   SearchIcon,
 } from "lucide-react"
-import type { Influencer } from "@/types/influencer"
 
 // Table header column definition
 interface ColumnDef<T> {
@@ -64,6 +64,50 @@ function formatPercentage(value: number): string {
     style: "percent",
     minimumFractionDigits: 2,
   }).format(value / 100)
+}
+
+// Status Select component for inline editing
+function StatusSelect({
+  influencerId,
+  currentStatus,
+}: {
+  influencerId: string
+  currentStatus: InfluencerStatus
+}) {
+  const [isUpdating, setIsUpdating] = React.useState(false)
+
+  async function handleStatusChange(newStatus: string) {
+    setIsUpdating(true)
+    try {
+      await updateInfluencerStatus(influencerId, newStatus as InfluencerStatus)
+      toast.success("Estado actualizado correctamente")
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Error al actualizar estado"
+      )
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  return (
+    <Select
+      value={currentStatus}
+      onValueChange={handleStatusChange}
+      disabled={isUpdating}
+    >
+      <SelectTrigger className="h-7 w-32">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {INFLUENCER_STATUSES.map((status) => (
+          <SelectItem key={status.value} value={status.value}>
+            {status.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  )
 }
 
 // Sort icon component
@@ -420,7 +464,10 @@ export function InfluencersTable() {
                           {influencer.category}
                         </td>
                         <td className="px-4 py-3 text-sm">
-                          {influencer.status}
+                          <StatusSelect
+                            influencerId={influencer.id}
+                            currentStatus={influencer.status}
+                          />
                         </td>
                         <td className="px-4 py-3 text-sm">
                           {influencer.country}

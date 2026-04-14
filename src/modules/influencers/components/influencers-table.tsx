@@ -20,7 +20,10 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { INFLUENCER_CATEGORIES, INFLUENCER_STATUSES } from "@/types/influencer"
-import { useInfluencers, type InfluencerFilters } from "../hooks/use-influencers"
+import {
+  useInfluencers,
+  type InfluencerFilters,
+} from "../hooks/use-influencers"
 import { InfluencerRegisterForm } from "./influencer-register-form"
 import {
   ArrowDownIcon,
@@ -85,11 +88,22 @@ function SortIcon({ field }: { field: keyof Influencer }) {
 const TableContext = React.createContext<{
   filters: InfluencerFilters
   sort: { field: keyof Influencer; direction: "asc" | "desc" }
+  pagination: {
+    page: number
+    perPage: number
+    totalCount: number
+    totalPages: number
+  }
+  setPage: ReturnType<typeof useInfluencers>["setPage"]
+  isLoading: boolean
   updateFilter: ReturnType<typeof useInfluencers>["updateFilter"]
   updateSort: ReturnType<typeof useInfluencers>["updateSort"]
 }>({
   filters: {},
   sort: { field: "created_at", direction: "desc" },
+  pagination: { page: 1, perPage: 10, totalCount: 0, totalPages: 0 },
+  setPage: () => {},
+  isLoading: false,
   updateFilter: () => {},
   updateSort: () => {},
 })
@@ -106,13 +120,13 @@ function FiltersBar() {
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
         {/* Search */}
         <div className="relative">
-          <SearchIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <SearchIcon className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
           <input
             type="text"
             placeholder="Buscar por nombre o email..."
             value={filters.search || ""}
             onChange={(e) => updateFilter("search", e.target.value)}
-            className="h-8 w-full rounded-lg border border-input bg-background py-1.5 pl-9 pr-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/50"
+            className="h-8 w-full rounded-lg border border-input bg-background py-1.5 pr-3 pl-9 text-sm outline-none focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/50"
           />
         </div>
 
@@ -162,7 +176,7 @@ function FiltersBar() {
           placeholder="País..."
           value={filters.country || ""}
           onChange={(e) => updateFilter("country", e.target.value)}
-          className="h-8 rounded-lg border border-input bg-background py-1.5 px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/50"
+          className="h-8 rounded-lg border border-input bg-background px-3 py-1.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/50"
         />
 
         {/* City Filter */}
@@ -171,7 +185,7 @@ function FiltersBar() {
           placeholder="Ciudad..."
           value={filters.city || ""}
           onChange={(e) => updateFilter("city", e.target.value)}
-          className="h-8 rounded-lg border border-input bg-background py-1.5 px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/50"
+          className="h-8 rounded-lg border border-input bg-background px-3 py-1.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/50"
         />
       </div>
     </div>
@@ -180,18 +194,7 @@ function FiltersBar() {
 
 // Pagination component
 function PaginationBar() {
-  const { pagination, setPage, isLoading } = React.useContext(
-    TableContext
-  ) as unknown as {
-    pagination: {
-      page: number
-      perPage: number
-      totalCount: number
-      totalPages: number
-    }
-    setPage: ReturnType<typeof useInfluencers>["setPage"]
-    isLoading: boolean
-  }
+  const { pagination, setPage, isLoading } = React.useContext(TableContext)
 
   const { page, perPage, totalCount, totalPages } = pagination
 
@@ -227,12 +230,18 @@ function PaginationBar() {
 }
 
 // Sortable header cell
-function SortableHeader({ field, label }: { field: keyof Influencer; label: string }) {
+function SortableHeader({
+  field,
+  label,
+}: {
+  field: keyof Influencer
+  label: string
+}) {
   const { updateSort } = React.useContext(TableContext)
 
   return (
     <th
-      className="cursor-pointer select-none px-4 py-3 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/50"
+      className="cursor-pointer px-4 py-3 text-left text-sm font-medium text-muted-foreground transition-colors select-none hover:bg-muted/50"
       onClick={() => updateSort(field)}
     >
       <div className="flex items-center gap-1">
@@ -279,8 +288,19 @@ export function InfluencersTable() {
       sort,
       updateFilter,
       updateSort,
+      pagination: paginationState,
+      setPage,
+      isLoading,
     }),
-    [filters, sort, updateFilter, updateSort]
+    [
+      filters,
+      sort,
+      updateFilter,
+      updateSort,
+      paginationState,
+      setPage,
+      isLoading,
+    ]
   )
 
   return (
@@ -302,7 +322,8 @@ export function InfluencersTable() {
               <DialogHeader>
                 <DialogTitle>Registrar Influencer</DialogTitle>
                 <DialogDescription>
-                  Completa los datos del influencer para registrarlo en el sistema
+                  Completa los datos del influencer para registrarlo en el
+                  sistema
                 </DialogDescription>
               </DialogHeader>
               <InfluencerRegisterForm onSuccess={handleSuccess} />
@@ -369,8 +390,12 @@ export function InfluencersTable() {
                         className="border-b transition-colors hover:bg-muted/30"
                       >
                         <td className="px-4 py-3 text-sm">{influencer.name}</td>
-                        <td className="px-4 py-3 text-sm">{influencer.email}</td>
-                        <td className="px-4 py-3 text-sm">{influencer.phone}</td>
+                        <td className="px-4 py-3 text-sm">
+                          {influencer.email}
+                        </td>
+                        <td className="px-4 py-3 text-sm">
+                          {influencer.phone}
+                        </td>
                         <td className="px-4 py-3 text-sm">
                           {influencer.instagram_url ? (
                             <a
@@ -394,8 +419,12 @@ export function InfluencersTable() {
                         <td className="px-4 py-3 text-sm">
                           {influencer.category}
                         </td>
-                        <td className="px-4 py-3 text-sm">{influencer.status}</td>
-                        <td className="px-4 py-3 text-sm">{influencer.country}</td>
+                        <td className="px-4 py-3 text-sm">
+                          {influencer.status}
+                        </td>
+                        <td className="px-4 py-3 text-sm">
+                          {influencer.country}
+                        </td>
                         <td className="px-4 py-3 text-sm">{influencer.city}</td>
                       </tr>
                     ))
